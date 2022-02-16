@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, ComponentType } from "react";
 import {
   View,
   FlatList,
@@ -8,10 +8,10 @@ import {
   ListRenderItemInfo,
   StyleProp,
   ViewStyle,
-} from 'react-native';
-import onSelect from './functions/onSelect';
-import alignSelect from './functions/alignSelect';
-import { marginStart, marginEnd } from './functions/onMargin';
+} from "react-native";
+import onSelect from "./functions/onSelect";
+import alignSelect from "./functions/alignSelect";
+import { marginStart, marginEnd } from "./functions/onMargin";
 
 export interface ListReturn {
   item: any;
@@ -19,21 +19,25 @@ export interface ListReturn {
 }
 
 export interface Option extends ListReturn {
-  layout: LayoutRectangle,
+  layout: LayoutRectangle;
   left: number;
   top: number;
   right: number;
   bottom: number;
 }
 
-export type SnapAlignement = 'start' | 'center' | 'end';
+export type SnapAlignement = "start" | "center" | "end";
 
 export interface Snap {
-  snapToInterval: number,
-  snapToAlignment: SnapAlignement,
+  snapToInterval: number;
+  snapToAlignment: SnapAlignement;
 }
 
-export type HandleSelection =  (item: any, index: number, scrollPosition: number | null) => void;
+export type HandleSelection = (
+  item: any,
+  index: number,
+  scrollPosition: number | null
+) => void;
 
 export interface SmoothPickerProps extends FlatListProps<any> {
   onSelected?: (obj: ListReturn) => void;
@@ -47,8 +51,11 @@ export interface SmoothPickerProps extends FlatListProps<any> {
   endMargin?: number;
   refFlatList?: React.MutableRefObject<FlatList | null>;
   selectOnPress?: boolean;
-  styleButton?:  StyleProp<ViewStyle>;
+  styleButton?: StyleProp<ViewStyle>;
   activeOpacityButton?: number;
+  flatListComponent: ComponentType<
+    FlatListProps<any> & { ref: React.RefObject<FlatList<any>> }
+  >;
 }
 
 interface State {
@@ -83,23 +90,23 @@ class SmoothPicker extends Component<SmoothPickerProps, State> {
         scrollAnimation = false,
         initialScrollToIndex,
       } = this.props;
-      if (typeof initialScrollToIndex !== 'undefined') {
+      if (typeof initialScrollToIndex !== "undefined") {
         const option = this.options[initialScrollToIndex];
         if (option) {
-          alignSelect(
-            horizontal,
-            scrollAnimation,
-            option,
-            this.refList
-          );
+          alignSelect(horizontal, scrollAnimation, option, this.refList);
         }
       }
     } catch (error) {
-      console.log('error', error);
+      console.log("error", error);
     }
   };
 
-  _save = (i: number, layout: LayoutRectangle, item: any, horizontal: boolean | null) => {
+  _save = (
+    i: number,
+    layout: LayoutRectangle,
+    item: any,
+    horizontal: boolean | null
+  ) => {
     const nOpt: Option = {
       layout,
       item,
@@ -107,21 +114,25 @@ class SmoothPicker extends Component<SmoothPickerProps, State> {
       top: 0,
       bottom: 0,
       left: 0,
-      right:0,
+      right: 0,
     };
     this.options[i] = nOpt;
 
-    this.options.forEach(option => {
+    this.options.forEach((option) => {
       const { index } = option;
       if (horizontal) {
-        let left: number = this.options[index - 1] ? this.options[index - 1].right : 0;
+        let left: number = this.options[index - 1]
+          ? this.options[index - 1].right
+          : 0;
         let right: number = this.options[index - 1]
           ? left + this.options[index].layout.width
           : this.options[index].layout.width;
         this.options[index].right = right;
         this.options[index].left = left;
       } else {
-        let top: number = this.options[index - 1] ? this.options[index - 1].bottom : 0;
+        let top: number = this.options[index - 1]
+          ? this.options[index - 1].bottom
+          : 0;
         let bottom: number = this.options[index - 1]
           ? top + this.options[index].layout.height
           : this.options[index].layout.height;
@@ -141,7 +152,7 @@ class SmoothPicker extends Component<SmoothPickerProps, State> {
     });
   };
 
-  _renderItem = (info: ListRenderItemInfo<any>):(JSX.Element | null) => {
+  _renderItem = (info: ListRenderItemInfo<any>): JSX.Element | null => {
     const {
       data,
       renderItem,
@@ -223,14 +234,17 @@ class SmoothPicker extends Component<SmoothPickerProps, State> {
     );
   };
 
-  render(): JSX.Element {
+  render() {
     const {
       horizontal = false,
       magnet = false,
       snapInterval = null,
-      snapToAlignment = 'center',
+      snapToAlignment = "center",
       scrollAnimation = false,
+      flatListComponent,
     } = this.props;
+
+    const FlatListComponent = flatListComponent || FlatList;
 
     let snap: Snap = {} as Snap;
     if (snapInterval) {
@@ -240,7 +254,7 @@ class SmoothPicker extends Component<SmoothPickerProps, State> {
       };
     }
     return (
-      <FlatList
+      <FlatListComponent
         {...this.props}
         {...snap}
         onLayout={({ nativeEvent: { layout } }) => {
