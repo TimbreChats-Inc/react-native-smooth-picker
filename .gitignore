@@ -36,7 +36,6 @@ DerivedData/
 ### ReactNative.Buck Stack ###
 buck-out/
 .buckconfig.local
-.buckd/
 .buckversion
 .fakebuckversion
 
